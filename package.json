@@ -1,0 +1,38 @@
+{
+  "name": "@junaid1460/forms-annotations",
+  "version": "1.0.0",
+  "description": "forms for node apps",
+  "main": "src/index.js",
+  "scripts": {
+    "prepublish": "tsc"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/junaid1460/forms-annotations.git"
+  },
+  "keywords": [
+    "hapi",
+    "junaid"
+  ],
+  "author": "Junaid",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/junaid1460/forms-annotations/issues"
+  },
+  "homepage": "https://github.com/junaid1460/forms-annotations#readme",
+  "dependencies": {
+    "@types/joi": "^14.3.3",
+    "hapi": "^18.1.0",
+    "reflect-metadata": "^0.1.13"
+  },
+  "devDependencies": {
+    "@types/hapi": "^18.0.2",
+    "typescript": "^3.4.5",
+    "joi": "^14.3.1"
+  },
+  "prettier": {
+    "tabWidth": 4,
+    "semi": true,
+    "endOfLine": "auto"
+  }
+}

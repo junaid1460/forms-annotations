@@ -1,0 +1,27 @@
+{
+    "compilerOptions": {
+        "experimentalDecorators": true,
+        "module": "commonjs",
+        "noImplicitAny": true,
+        "removeComments": true,
+        "preserveConstEnums": true,
+        "sourceMap": true,
+        "emitDecoratorMetadata": true,
+        "strictNullChecks": true,
+
+        "lib": [
+            "es5",
+            "es2015",
+            "es6",
+            "es2016",
+            "esnext.asynciterable"
+        ],
+        "rootDir": ".",
+
+        "target": "es6"
+    },
+    "include": [
+        "src/**/*",
+        "test/**/*"
+    ],
+}

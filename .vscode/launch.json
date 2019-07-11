@@ -1,0 +1,22 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "args": [],
+            "cwd": "${workspaceRoot}",
+            "env": {
+                "NODE_ENV": "development"
+            },
+            "console": false,
+            "name": "Test",
+            "outFiles": ["${workspaceRoot}/src/**/*"],
+            "program": "${workspaceRoot}/src/example.ts",
+            "request": "launch",
+            "runtimeArgs": ["--nolazy"],
+            "runtimeExecutable": "/Users/muhammadjunaid/.nvm/versions/node/v10.16.0/bin/node",
+            "sourceMaps": true,
+            "stopOnEntry": false,
+            "type": "node"
+        }
+    ]
+}

@@ -1,0 +1,22 @@
+{
+    "extends": ["tslint:recommended"],
+    "rules": {
+        "no-angle-bracket-type-assertion": false,
+        "object-literal-sort-keys": false,
+        "interface-name": false,
+        "variable-name": true,
+        "max-classes-per-file": false,
+        "object-literal-key-quotes": false,
+        "prefer-object-spread": true,
+        "object-literal-shorthand": false,
+        "no-unsafe-any": true,
+        "max-line-length": false,
+        "no-bitwise": false,
+        "indent": [true, "spaces", 4],
+        "linebreak-style": true,
+        "ordered-imports": true,
+        "eofline": true,
+        "semicolon": true,
+        "no-console": false
+    }
+}
