@@ -21,14 +21,10 @@
   },
   "homepage": "https://github.com/junaid1460/forms-annotations#readme",
   "dependencies": {
-    "@types/joi": "^14.3.3",
-    "hapi": "^18.1.0",
     "reflect-metadata": "^0.1.13"
   },
   "devDependencies": {
-    "@types/hapi": "^18.0.2",
-    "typescript": "^3.4.5",
-    "joi": "^14.3.1"
+    "typescript": "^3.4.5"
   },
   "prettier": {
     "tabWidth": 4,
