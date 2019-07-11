@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "description": "forms for node apps",
   "main": "src/index.js",
+  "publishConfig": {
+    "access" : "public"
+  },
   "scripts": {
     "prepublish": "tsc"
   },
