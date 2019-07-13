@@ -2,10 +2,9 @@ export namespace Forms {
     interface Common {
         required?: boolean;
         disabled?: boolean;
-        defaultValue?: any;
-        min_length?: number;
-        max_length?: number;
+        default_value?: any;
         widget?: string;
+        placeholder?: string;
     }
     export interface Options<T = string> {
         view_value: string;
@@ -42,7 +41,7 @@ export namespace Forms {
         return Boolean(target.___formSchema) || (target.prototype && target.prototype.___formSchema);
     }
 
-    export function form<T>(target: T) {
+    export function Form<T>(target: T) {
         if (isForm(target)) {
             (target as any).prototype!.___getSchema = () => {
                 return (target as any).prototype.___formSchema.map((func: () => any) => func()) as any;
@@ -53,23 +52,21 @@ export namespace Forms {
         return target;
     }
 
-    export function input<T>({ required, disabled, defaultValue, max_length, min_length, widget,type }: {type: "text" | "number" | "email"} & Common = {type: 'text'}) {
+    export function Input<T>(args: {
+                type: "text" | "number" | "email", 
+                max_length?: number, 
+                min_length?: number, 
+            } & Common  = {type: 'text'}) {
         return (target: T, propertyKey: string | symbol) => {
             addToPrototype(target, () => ({
-                required: required,
                 key: propertyKey,
                 type: "input",
-                value_type: type,
-                disabled: disabled,
-                default: defaultValue || propertyKey,
-                max_length: max_length,
-                min_length: min_length,
-                widget: widget,
+                ...args
             }));
         };
     }
 
-    export function custom<T>({ widget }: { widget: string }) {
+    export function Custom<T>({ widget }: { widget: string }) {
         return (target: T, propertyKey: string | symbol) => {
             addToPrototype(target, () => ({
                 key: propertyKey,
@@ -79,30 +76,18 @@ export namespace Forms {
         };
     }
 
-    export function number<T>({ required, defaultValue, disabled, widget, min_length, max_length }: {} & Common = {}) {
-        return (target: T, propertyKey: string | symbol) => {
-            addToPrototype(target, () => ({
-                required: required,
-                key: propertyKey,
-                type: "number",
-                disabled: disabled,
-                default: defaultValue || propertyKey,
-                max_length: max_length,
-                min_length: min_length,
-                widget: widget,
-            }));
-        };
-    }
 
     export function list<T>({
         required,
-        defaultValue,
+        default_value,
         disabled,
         listof,
         max_length,
         min_length,
         widget,
-    }: { listof: () => any } & Common) {
+        placeholder,
+
+    }: { listof: () => any, max_length?: number, min_length?: number } & Common) {
         return (target: T, propertyKey: string | symbol) => {
             addToPrototype(target, () => {
                 const listItem = listof();
@@ -112,67 +97,61 @@ export namespace Forms {
                     type: "list",
                     listof: getSchema(listItem),
                     disabled: disabled,
-                    default: defaultValue || propertyKey,
+                    default: default_value || propertyKey,
                     max_length: max_length,
                     min_length: min_length,
                     widget: widget,
+                    placeholder: placeholder
                 };
             });
         };
     }
 
-    export function timestamp<T>({ required, defaultValue, disabled, min_length, max_length }: {} & Common = {}) {
+    export function Timestamp<T>(args: {range? : boolean} & Common={}) {
         return (target: T, propertyKey: string | symbol) => {
             addToPrototype(target, () => ({
-                required: required,
                 key: propertyKey,
                 type: "timestamp",
-                disabled: disabled,
-                default: defaultValue || propertyKey,
+                ...args
             }));
         };
     }
 
-    export function select<T>({ options, required, disabled, defaultValue }: { options: Array<Options<T>> } & Common) {
+    export function Select<T>(args: { options: Array<Options<T>> } & Common) {
         return <T>(target: T, propertyKey: string | symbol) => {
             addToPrototype(target, () => ({
-                required: required,
-                options: options,
                 key: propertyKey,
                 type: "select",
-                disabled: disabled,
-                default: defaultValue || propertyKey,
+                ...args
             }));
         };
     }
 
-    export function radio<T>({ required, options, defaultValue, disabled }: { options: Options[] } & Common) {
+    export function Radio<T>(args: { options: Options[] } & Common ) {
         return (target: T, propertyKey: string | symbol) => {
             addToPrototype(target, () => ({
-                required: required,
-                options: options,
                 key: propertyKey,
                 type: "radio",
-                disabled: disabled,
-                default: defaultValue || propertyKey,
+                ...args
             }));
         };
     }
 
-    export function file<T>({ required, disabled, defaultValue, widget }: {} & Common = {}) {
+
+    export function File<T>(args: {file_types:string[],} &  Common ) {
         return (target: T, propertyKey: string | symbol) => {
             addToPrototype(target, () => ({
-                required: required,
                 key: propertyKey,
                 type: "file",
-                default: defaultValue || propertyKey,
-                disabled: disabled,
-                widget: widget,
+                ...args
             }));
         };
     }
 
-    export function conditionalSubSchema<T>({ branchKey, branches }: { branchKey: keyof T; branches: () => { [name: string]: any } }) {
+    /**
+     * Renders branch based on value of branchKey
+     */
+    export function Branch<T>({ branch_key, branches }: { branch_key: keyof T; branches: () => { [name: string]: any } }) {
         return <T>(target: T, propertyKey: string | symbol) => {
             const processedBranches: any = {};
             Object.keys(branches()).forEach((e: string) => {
@@ -180,7 +159,7 @@ export namespace Forms {
                 processedBranches[e] = getSchema(branch);
             });
             addToPrototype(target, () => ({
-                branch_key: branchKey,
+                branch_key: branch_key,
                 branches: processedBranches,
                 key: propertyKey,
                 type: "branch",
@@ -188,7 +167,7 @@ export namespace Forms {
         };
     }
 
-    export function subSchema<T>({ schema, widget }: { schema: any; widget?: any }) {
+    export function SubSchema<T>({ schema, widget }: { schema: any; widget?: any }) {
         return (target: T, propertyKey: string | symbol) => {
             addToPrototype(target, () => ({
                 key: propertyKey,
