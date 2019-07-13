@@ -53,15 +53,16 @@ export namespace Forms {
     }
 
     export function Input<T>(args: {
-                type: "text" | "number" | "email", 
+                dtype?: "text" | "number" | "email", 
                 max_length?: number, 
                 min_length?: number, 
-            } & Common  = {type: 'text'}) {
+            } & Common  = {dtype: 'text'}) {
         return (target: T, propertyKey: string | symbol) => {
             addToPrototype(target, () => ({
                 key: propertyKey,
                 type: "input",
-                ...args
+                ...args,
+                input_type: args.dtype || "text"
             }));
         };
     }
@@ -138,7 +139,7 @@ export namespace Forms {
     }
 
 
-    export function File<T>(args: {file_types:string[],} &  Common ) {
+    export function File<T>(args: {file_types:string[], upload_url?: string} &  Common = {file_types: []} ) {
         return (target: T, propertyKey: string | symbol) => {
             addToPrototype(target, () => ({
                 key: propertyKey,

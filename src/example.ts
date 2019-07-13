@@ -6,7 +6,7 @@ class MyForm {
     @Forms.Input()
     name: string
 
-    @Forms.Input({type: "email"})
+    @Forms.Input({dtype: "email"})
     email: string
 }
 
