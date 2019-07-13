@@ -1,10 +1,10 @@
 {
   "name": "@junaid1460/forms-annotations",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "forms for node apps",
   "main": "src/index.js",
   "publishConfig": {
-    "access" : "public"
+    "access": "public"
   },
   "scripts": {
     "prepublish": "tsc"
