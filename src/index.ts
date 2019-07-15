@@ -52,12 +52,12 @@ export namespace Forms {
         return target;
     }
 
-    export function Input<T>(args: {
+    export function Input(args: {
                 dtype?: "text" | "number" | "email", 
                 max_length?: number, 
                 min_length?: number, 
             } & Common  = {dtype: 'text'}) {
-        return (target: T, propertyKey: string | symbol) => {
+        return <T>(target: T, propertyKey: string | symbol) => {
             addToPrototype(target, () => ({
                 key: propertyKey,
                 type: "input",
@@ -67,8 +67,8 @@ export namespace Forms {
         };
     }
 
-    export function Custom<T>({ widget }: { widget: string }) {
-        return (target: T, propertyKey: string | symbol) => {
+    export function Custom({ widget }: { widget: string }) {
+        return <T>(target: T, propertyKey: string | symbol) => {
             addToPrototype(target, () => ({
                 key: propertyKey,
                 type: "custom",
@@ -78,7 +78,7 @@ export namespace Forms {
     }
 
 
-    export function list<T>({
+    export function list({
         required,
         default_value,
         disabled,
@@ -89,7 +89,7 @@ export namespace Forms {
         placeholder,
 
     }: { listof: () => any, max_length?: number, min_length?: number } & Common) {
-        return (target: T, propertyKey: string | symbol) => {
+        return <T>(target: T, propertyKey: string | symbol) => {
             addToPrototype(target, () => {
                 const listItem = listof();
                 return {
@@ -108,8 +108,8 @@ export namespace Forms {
         };
     }
 
-    export function Timestamp<T>(args: {range? : boolean} & Common={}) {
-        return (target: T, propertyKey: string | symbol) => {
+    export function Timestamp(args: {range? : boolean} & Common={}) {
+        return <T>(target: T, propertyKey: string | symbol) => {
             addToPrototype(target, () => ({
                 key: propertyKey,
                 type: "timestamp",
@@ -118,7 +118,7 @@ export namespace Forms {
         };
     }
 
-    export function Select<T>(args: { options: Array<Options<T>> } & Common) {
+    export function Select<T=any>(args: { options: Array<Options<T>> } & Common) {
         return <T>(target: T, propertyKey: string | symbol) => {
             addToPrototype(target, () => ({
                 key: propertyKey,
@@ -128,8 +128,8 @@ export namespace Forms {
         };
     }
 
-    export function Radio<T>(args: { options: Options<T>[] } & Common ) {
-        return (target: T, propertyKey: string | symbol) => {
+    export function Radio<T=any>(args: { options: Options<T>[] } & Common ) {
+        return <T>(target: T, propertyKey: string | symbol) => {
             addToPrototype(target, () => ({
                 key: propertyKey,
                 type: "radio",
@@ -139,8 +139,8 @@ export namespace Forms {
     }
 
 
-    export function File<T>(args: {file_types:string[], upload_url?: string} &  Common = {file_types: []} ) {
-        return (target: T, propertyKey: string | symbol) => {
+    export function File(args: {file_types:string[], upload_url?: string} &  Common = {file_types: []} ) {
+        return <T>(target: T, propertyKey: string | symbol) => {
             addToPrototype(target, () => ({
                 key: propertyKey,
                 type: "file",
@@ -168,8 +168,8 @@ export namespace Forms {
         };
     }
 
-    export function SubSchema<T>({ schema, widget }: { schema: any; widget?: any }) {
-        return (target: T, propertyKey: string | symbol) => {
+    export function SubSchema({ schema, widget }: { schema: any; widget?: any }) {
+        return <T>(target: T, propertyKey: string | symbol) => {
             addToPrototype(target, () => ({
                 key: propertyKey,
                 schema: getSchema(schema),
