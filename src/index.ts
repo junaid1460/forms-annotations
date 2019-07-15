@@ -67,7 +67,7 @@ export namespace Forms {
         };
     }
 
-    export function Custom({ widget }: { widget: string }) {
+    export function Custom({ widget }: { widget: string, } & Common) {
         return <T>(target: T, propertyKey: string | symbol) => {
             addToPrototype(target, () => ({
                 key: propertyKey,
