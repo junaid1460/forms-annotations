@@ -6,7 +6,7 @@ export namespace Forms {
         widget?: string;
         placeholder?: string;
     }
-    export interface Options<T = string> {
+    export interface Options<T> {
         view_value: string;
         value: T;
     }
@@ -128,7 +128,7 @@ export namespace Forms {
         };
     }
 
-    export function Radio<T>(args: { options: Options[] } & Common ) {
+    export function Radio<T>(args: { options: Options<T>[] } & Common ) {
         return (target: T, propertyKey: string | symbol) => {
             addToPrototype(target, () => ({
                 key: propertyKey,
