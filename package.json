@@ -1,6 +1,6 @@
 {
   "name": "@junaid1460/forms-annotations",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "forms for node apps",
   "main": "src/index.js",
   "publishConfig": {
