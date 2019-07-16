@@ -157,7 +157,7 @@ export namespace Forms {
         branches,
     }: {
         branch_key: keyof T;
-        branches: () => { [name: string]: () => any };
+        branches: () => { [name: string]: () => Common };
     }) {
         return <T>(target: T, propertyKey: string | symbol) => {
             const processedBranches: any = {};
