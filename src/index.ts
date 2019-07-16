@@ -152,18 +152,12 @@ export namespace Forms {
     /**
      * Renders branch based on value of branchKey
      */
-    export function Branch<T>({
-        branch_key,
-        branches,
-    }: {
-        branch_key: keyof T;
-        branches: () => { [name: string]: () => Common };
-    }) {
+    export function Branch<T>({ branch_key, branches }: { branch_key: keyof T; branches: () => { [name: string]: any } }) {
         return <T>(target: T, propertyKey: string | symbol) => {
             const processedBranches: any = {};
             Object.keys(branches()).forEach((e: string) => {
                 const branch = branches()[e];
-                processedBranches[e] = branch();
+                processedBranches[e] = getSchema(branch);
             });
             addToPrototype(target, () => ({
                 branch_key: branch_key,
@@ -173,7 +167,6 @@ export namespace Forms {
             }));
         };
     }
-
 
     export function SubSchema({ schema, widget }: { schema: any; widget?: any }) {
         return <T>(target: T, propertyKey: string | symbol) => {
