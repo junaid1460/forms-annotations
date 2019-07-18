@@ -5,6 +5,7 @@ export namespace Forms {
         default_value?: any;
         widget?: string;
         placeholder?: string;
+        tooltip?: string;
     }
     export interface Options<T> {
         view_value: string;
