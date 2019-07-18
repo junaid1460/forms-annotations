@@ -14,13 +14,13 @@ typescript 3 (es6)
 ```typescript
 import { Forms } from '.';
 
-@Forms.form
+@Forms.Form
 class MyForm {
 
-    @Forms.input()
+    @Forms.Input()
     name: string
 
-    @Forms.input({type: "email"})
+    @Forms.Input({dtype: "email"})
     email: string
 }
 
