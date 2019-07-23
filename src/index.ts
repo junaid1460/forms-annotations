@@ -1,3 +1,5 @@
+import * as joi from 'joi';
+
 export namespace Forms {
     interface Common {
         required?: boolean;
@@ -7,6 +9,35 @@ export namespace Forms {
         placeholder?: string;
         tooltip?: string;
     }
+
+    const schemaSymbol=  Symbol("Joi object schema")
+    type FormData<T> = Omit<T, keyof BaseForm<any>>
+    export class BaseForm<T extends BaseForm<T>> {
+
+        static getObjectSchema(): joi.ObjectSchema  {
+            return (this.prototype as any)[schemaSymbol]
+        }
+        
+        validate(): Promise<this> {
+            return new Promise((resolve, reject) => {
+               const schema = ( this as any)[schemaSymbol] as joi.ObjectSchema;
+               schema.validate(this, {}, (error, value) =>  {
+                   if(error) {
+                       return reject(error)
+                   }
+                   resolve(value)
+               })
+            })
+        }
+
+        constructor(data : FormData<T>) {
+            const validate = this.validate
+            Object.assign(this, {...this, ...data, })
+        }
+    }
+
+
+
     export interface Options<T> {
         view_value: string;
         value: T;
@@ -20,7 +51,7 @@ export namespace Forms {
 
     export type AdminInterface<T> = { [name in keyof T]?: T[name] };
 
-    export interface Form {
+    interface Form {
         ___formSchema: Array<() => any>;
         ___getSchema(): () => any;
     }
@@ -42,15 +73,36 @@ export namespace Forms {
         return Boolean(target.___formSchema) || (target.prototype && target.prototype.___formSchema);
     }
 
-    export function Form<T>(target: T) {
+    export function Form<T extends any>(target: T) {
         if (isForm(target)) {
             (target as any).prototype!.___getSchema = () => {
                 return (target as any).prototype.___formSchema.map((func: () => any) => func()) as any;
             };
+            if(target.prototype[schemaSymbol]) {
+                // Create joi object schema if validators are provided
+                target.prototype[schemaSymbol] = joi.object(target.prototype[schemaSymbol] )
+            }
         } else {
             throw new Error("Form with no fields");
         }
         return target;
+    }
+
+    function WrapValidator<T extends PropertyDecorator>(func: T) {
+        const validatorFunc  = (predicate: (value:typeof joi) => joi.Schema) => {
+            return (target: any, propertyKey: string | symbol) => {
+                func(target, propertyKey)
+                if(!target[schemaSymbol]) {
+                    Object.defineProperty(target, schemaSymbol, {
+                        writable: true,
+                        value:  {}
+                    });
+                }
+                target[schemaSymbol][propertyKey] = predicate(joi)
+            }
+        }
+        (func as any).Validate = validatorFunc;
+        return func as T & {Validate: typeof validatorFunc }
     }
 
     export function Input(args: {
@@ -58,24 +110,24 @@ export namespace Forms {
                 max_length?: number, 
                 min_length?: number, 
             } & Common  = {dtype: 'text'}) {
-        return <T>(target: T, propertyKey: string | symbol) => {
+        return WrapValidator(<T>(target: T, propertyKey: string | symbol) => {
             addToPrototype(target, () => ({
                 key: propertyKey,
                 type: "input",
                 ...args,
                 input_type: args.dtype || "text"
             }));
-        };
+        });
     }
 
     export function Custom({ widget }: Common) {
-        return <T>(target: T, propertyKey: string | symbol) => {
+        return WrapValidator(<T>(target: T, propertyKey: string | symbol) => {
             addToPrototype(target, () => ({
                 key: propertyKey,
                 type: "custom",
                 widget: widget,
             }));
-        };
+        });
     }
 
 
@@ -90,7 +142,7 @@ export namespace Forms {
         placeholder,
 
     }: { listof: () => any, max_length?: number, min_length?: number } & Common) {
-        return <T>(target: T, propertyKey: string | symbol) => {
+        return WrapValidator(<T>(target: T, propertyKey: string | symbol) => {
             addToPrototype(target, () => {
                 const listItem = listof();
                 return {
@@ -106,55 +158,55 @@ export namespace Forms {
                     placeholder: placeholder
                 };
             });
-        };
+        });
     }
 
     export function Timestamp(args: {range? : boolean} & Common={}) {
-        return <T>(target: T, propertyKey: string | symbol) => {
+        return WrapValidator(<T>(target: T, propertyKey: string | symbol) => {
             addToPrototype(target, () => ({
                 key: propertyKey,
                 type: "timestamp",
                 ...args
             }));
-        };
+        });
     }
 
     export function Select<T=any>(args: { options: Array<Options<T>> } & Common) {
-        return <T>(target: T, propertyKey: string | symbol) => {
+        return WrapValidator(<T>(target: T, propertyKey: string | symbol) => {
             addToPrototype(target, () => ({
                 key: propertyKey,
                 type: "select",
                 ...args
             }));
-        };
+        });
     }
 
     export function Radio<T=any>(args: { options: Options<T>[] } & Common ) {
-        return <T>(target: T, propertyKey: string | symbol) => {
+        return WrapValidator(<T>(target: T, propertyKey: string | symbol) => {
             addToPrototype(target, () => ({
                 key: propertyKey,
                 type: "radio",
                 ...args
             }));
-        };
+        });
     }
 
 
     export function File(args: {file_types:string[], upload_url?: string} &  Common = {file_types: []} ) {
-        return <T>(target: T, propertyKey: string | symbol) => {
+        return WrapValidator(<T>(target: T, propertyKey: string | symbol) => {
             addToPrototype(target, () => ({
                 key: propertyKey,
                 type: "file",
                 ...args
             }));
-        };
+        });
     }
 
     /**
      * Renders branch based on value of branchKey
      */
     export function Branch<T>({ branch_key, branches }: { branch_key: keyof T; branches: () => { [name: string]: any } }) {
-        return <T>(target: T, propertyKey: string | symbol) => {
+        return WrapValidator(<T>(target: T, propertyKey: string | symbol) => {
             const processedBranches: any = {};
             Object.keys(branches()).forEach((e: string) => {
                 const branch = branches()[e];
@@ -166,17 +218,17 @@ export namespace Forms {
                 key: propertyKey,
                 type: "branch",
             }));
-        };
+        });
     }
 
     export function SubSchema({ schema, widget }: { schema: any; widget?: any }) {
-        return <T>(target: T, propertyKey: string | symbol) => {
+        return WrapValidator(<T>(target: T, propertyKey: string | symbol) => {
             addToPrototype(target, () => ({
                 key: propertyKey,
                 schema: getSchema(schema),
                 widget: widget,
                 type: "subtype",
             }));
-        };
+        });
     }
 }
