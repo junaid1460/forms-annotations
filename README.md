@@ -23,7 +23,8 @@ class MyForm extends Forms.BaseForm<MyForm> {
     @RequiredText()
     name?: any
 
-    @Forms.Input({dtype: "email"}).Validate(e => e.string().required())
+    @Forms.Input({dtype: "email"})
+    @Forms.Validate(e => e.string().required())
     email: string
 }
 
