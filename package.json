@@ -24,7 +24,9 @@
   },
   "homepage": "https://github.com/junaid1460/forms-annotations#readme",
   "dependencies": {
+    "@types/joi": "^14.3.3",
     "@types/node": "^12.6.2",
+    "joi": "^14.3.1",
     "reflect-metadata": "^0.1.13"
   },
   "devDependencies": {
