@@ -9,14 +9,15 @@ class MyForm extends Forms.BaseForm<MyForm> {
     @RequiredText()
     name?: any
 
-    @Forms.Input({dtype: "email"}).Validate(e => e.string().required())
+    @Forms.Input({dtype: "email"})
+    @Forms.Validate(e => e.string().required())
     email: string
 }
 
 
 const data= new MyForm({
     email: 'Test',
-    name: 1
+    name: "he"
 })
 
 console.log(data.validate().then(e => console.log(e)))

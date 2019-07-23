@@ -93,22 +93,32 @@ export namespace Forms {
         return target;
     }
 
+    function addJoiSchema(target: any, propertyKey: string|symbol, predicate: (validator: typeof joi) => joi.Schema) {
+        if(!target[schemaSymbol]) {
+            Object.defineProperty(target, schemaSymbol, {
+                writable: true,
+                value:  {}
+            });
+        }
+        target[schemaSymbol][propertyKey] = predicate(joi)
+    }
     function WrapValidator<T extends PropertyDecorator>(func: T) {
         const validatorFunc  = (predicate: (value:typeof joi) => joi.Schema) => {
             return (target: any, propertyKey: string | symbol) => {
                 func(target, propertyKey)
-                if(!target[schemaSymbol]) {
-                    Object.defineProperty(target, schemaSymbol, {
-                        writable: true,
-                        value:  {}
-                    });
-                }
-                target[schemaSymbol][propertyKey] = predicate(joi)
+                addJoiSchema(target, propertyKey, predicate)
             }
         }
         (func as any).Validate = validatorFunc;
         return func as T & {Validate: typeof validatorFunc }
     }
+
+    export function Validate(predicate: (value:typeof joi) => joi.Schema) {
+        return (target: any, propertyKey: string | symbol) => {
+            addJoiSchema(target, propertyKey, predicate)
+        }
+    } 
+
 
     export function Input(args: {
                 dtype?: "text" | "number" | "email", 
