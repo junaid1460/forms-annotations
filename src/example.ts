@@ -1,16 +1,24 @@
 import { Forms } from '.';
 
 @Forms.Form
-class MyForm {
+class MyForm extends Forms.BaseForm<MyForm> {
 
-    @Forms.Input()
-    name: string
+    @Forms.Input().Validate(e => e.string().required())
+    name?: string
 
-    @Forms.Input({dtype: "email"})
+    @Forms.Input({dtype: "email"}).Validate(e => e.string().required())
     email: string
 }
 
-console.log(Forms.getSchema(MyForm))
+
+const data= new MyForm({
+    email: 'Test',
+})
+
+console.log(data.validate().then(e => console.log(e)))
+console.log(MyForm.getObjectSchema())
+console.log(data)
+
 
 /**
  * 
