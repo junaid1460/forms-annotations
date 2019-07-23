@@ -16,7 +16,8 @@ const data= new MyForm({
 })
 
 console.log(data.validate().then(e => console.log(e)))
-console.log(MyForm.getObjectSchema())
+console.log(MyForm.getValidationSchema())
+console.log(MyForm.getUISchema())
 console.log(data)
 
 

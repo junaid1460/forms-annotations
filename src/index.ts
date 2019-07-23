@@ -14,8 +14,12 @@ export namespace Forms {
     type FormData<T> = Omit<T, keyof BaseForm<any>>
     export class BaseForm<T extends BaseForm<T>> {
 
-        static getObjectSchema(): joi.ObjectSchema  {
+        static getValidationSchema(): joi.ObjectSchema  {
             return (this.prototype as any)[schemaSymbol]
+        }
+
+        static getUISchema(): Common[]  {
+            return getSchema(this)
         }
         
         validate(): Promise<this> {
