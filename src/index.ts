@@ -11,6 +11,7 @@ export namespace Forms {
     }
 
     const schemaSymbol=  Symbol("Joi object schema")
+    type Omit<T, K> = { [P in Exclude<keyof T, K>]: T[P]; }
     type FormData<T> = Omit<T, keyof BaseForm<any>>
     export class BaseForm<T extends BaseForm<T>> {
 
