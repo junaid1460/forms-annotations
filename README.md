@@ -27,10 +27,12 @@ class MyForm extends Forms.BaseForm<MyForm> {
 
 const data= new MyForm({
     email: 'Test',
+    name: 1
 })
 
 console.log(data.validate().then(e => console.log(e)))
-console.log(MyForm.getObjectSchema())
+console.log(MyForm.getValidationSchema())
+console.log(MyForm.getUISchema())
 console.log(data)
 
 /**

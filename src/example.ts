@@ -4,7 +4,7 @@ import { Forms } from '.';
 class MyForm extends Forms.BaseForm<MyForm> {
 
     @Forms.Input().Validate(e => e.string().required())
-    name?: string
+    name?: any
 
     @Forms.Input({dtype: "email"}).Validate(e => e.string().required())
     email: string
@@ -13,6 +13,7 @@ class MyForm extends Forms.BaseForm<MyForm> {
 
 const data= new MyForm({
     email: 'Test',
+    name: 1
 })
 
 console.log(data.validate().then(e => console.log(e)))
