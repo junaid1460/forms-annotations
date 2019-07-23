@@ -14,11 +14,14 @@ typescript 3 (es6)
 ```typescript
 import { Forms } from '.';
 
+
+// Customize
+const RequiredText = () => Forms.Input().Validate(e => e.string().required())
 @Forms.Form
 class MyForm extends Forms.BaseForm<MyForm> {
 
-    @Forms.Input().Validate(e => e.string().required())
-    name?: string
+    @RequiredText()
+    name?: any
 
     @Forms.Input({dtype: "email"}).Validate(e => e.string().required())
     email: string

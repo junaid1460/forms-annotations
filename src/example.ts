@@ -1,9 +1,12 @@
 import { Forms } from '.';
 
+
+// Customize
+const RequiredText = () => Forms.Input().Validate(e => e.string().required())
 @Forms.Form
 class MyForm extends Forms.BaseForm<MyForm> {
 
-    @Forms.Input().Validate(e => e.string().required())
+    @RequiredText()
     name?: any
 
     @Forms.Input({dtype: "email"}).Validate(e => e.string().required())
