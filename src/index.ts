@@ -1,4 +1,5 @@
 import * as joi from 'joi';
+import 'reflect-metadata';
 
 export namespace Forms {
     interface Common {
@@ -12,7 +13,8 @@ export namespace Forms {
 
     const schemaSymbol=  Symbol("Joi object schema")
     type Omit<T, K> = { [P in Exclude<keyof T, K>]: T[P]; }
-    type FormData<T> = Omit<T, keyof BaseForm<any>>
+    type OptionalKeys<T> = {[key in keyof T]?: T[key]}
+    type FormData<T> = OptionalKeys<Omit<T, keyof BaseForm<any>>>
     export class BaseForm<T extends BaseForm<T>> {
 
         static getValidationSchema(): joi.ObjectSchema  {
@@ -38,6 +40,19 @@ export namespace Forms {
         constructor(data : FormData<T>) {
             const validate = this.validate
             Object.assign(this, {...this, ...data, })
+        }
+    }
+
+    function isValidatorClass(target: any): target is typeof BaseForm {
+        if(target[schemaSymbol] || target.prototype && target.prototype[schemaSymbol] ) {
+            return true;
+        }
+        return false
+    }
+
+    function getObjectSchema(target: any): joi.ObjectSchema | undefined {
+        if(isValidatorClass(target)) {
+            return target.getValidationSchema()
         }
     }
 
@@ -78,40 +93,57 @@ export namespace Forms {
         return Boolean(target.___formSchema) || (target.prototype && target.prototype.___formSchema);
     }
 
-    export function Form<T extends any>(target: T) {
+    export function Form<T extends Function>(target: T) {
+        if(isValidatorClass(target)) {
+            // Create joi object schema if validators are provided
+            target.prototype[schemaSymbol] = joi.object(target.prototype[schemaSymbol] )
+            target.getValidationSchema = BaseForm.getValidationSchema
+            target.getUISchema = BaseForm.getUISchema
+            target.prototype.validate = BaseForm.prototype.validate
+        }
         if (isForm(target)) {
             (target as any).prototype!.___getSchema = () => {
                 return (target as any).prototype.___formSchema.map((func: () => any) => func()) as any;
             };
-            if(target.prototype[schemaSymbol]) {
-                // Create joi object schema if validators are provided
-                target.prototype[schemaSymbol] = joi.object(target.prototype[schemaSymbol] )
-            }
         } else {
             throw new Error("Form with no fields");
         }
+
         return target;
     }
 
-    function addJoiSchema(target: any, propertyKey: string|symbol, predicate: (validator: typeof joi) => joi.Schema) {
+    function addJoiSchema(target: any, propertyKey: string|symbol, predicate: (validator: typeof joi) => (joi.Schema|undefined)) {
         if(!target[schemaSymbol]) {
             Object.defineProperty(target, schemaSymbol, {
                 writable: true,
-                value:  {}
+                value:  {
+                    
+                }
             });
         }
-        target[schemaSymbol][propertyKey] = predicate(joi)
+        const schema =  predicate(joi)
+        if(schema) {
+            target[schemaSymbol][propertyKey] = schema;
+        } else {
+            target[schemaSymbol][propertyKey] = joi.optional()
+        }
     }
     function WrapValidator<T extends PropertyDecorator>(func: T) {
+        const optionalValidationWrapper = (target: any, propertyKey: string | symbol) => {
+            addJoiSchema(target, propertyKey, e => e.optional())
+            func(target, propertyKey)
+        }
         const validatorFunc  = (predicate: (value:typeof joi) => joi.Schema) => {
             return (target: any, propertyKey: string | symbol) => {
-                func(target, propertyKey)
+                optionalValidationWrapper(target, propertyKey)
                 addJoiSchema(target, propertyKey, predicate)
             }
         }
-        (func as any).Validate = validatorFunc;
-        return func as T & {Validate: typeof validatorFunc }
+        (optionalValidationWrapper as any).Validate = validatorFunc;
+        return optionalValidationWrapper as T & {Validate: typeof validatorFunc }
     }
+
+
 
     export function Validate(predicate: (value:typeof joi) => joi.Schema) {
         return (target: any, propertyKey: string | symbol) => {
@@ -157,9 +189,15 @@ export namespace Forms {
         placeholder,
 
     }: { listof: () => any, max_length?: number, min_length?: number } & Common) {
-        return WrapValidator(<T>(target: T, propertyKey: string | symbol) => {
+        return (<T>(target: T, propertyKey: string | symbol) => {
             addToPrototype(target, () => {
                 const listItem = listof();
+                const schema = getObjectSchema(listItem)
+                if(schema) {
+                    addJoiSchema(target, propertyKey, e => joi.array().items(schema))
+                } else {
+                    addJoiSchema(target, propertyKey, e => joi.array())
+                }
                 return {
                     required: required,
                     key: propertyKey,
@@ -188,19 +226,10 @@ export namespace Forms {
 
     export function Select<T=any>(args: { options: Array<Options<T>> } & Common) {
         return WrapValidator(<T>(target: T, propertyKey: string | symbol) => {
+            addJoiSchema(target, propertyKey, e => e.valid(args.options.map(e => e.value)))
             addToPrototype(target, () => ({
                 key: propertyKey,
                 type: "select",
-                ...args
-            }));
-        });
-    }
-
-    export function Radio<T=any>(args: { options: Options<T>[] } & Common ) {
-        return WrapValidator(<T>(target: T, propertyKey: string | symbol) => {
-            addToPrototype(target, () => ({
-                key: propertyKey,
-                type: "radio",
                 ...args
             }));
         });
@@ -221,29 +250,43 @@ export namespace Forms {
      * Renders branch based on value of branchKey
      */
     export function Branch<T>({ branch_key, branches }: { branch_key: keyof T; branches: () => { [name: string]: any } }) {
-        return WrapValidator(<T>(target: T, propertyKey: string | symbol) => {
+        return <T>(target: T, propertyKey: string | symbol) => {
             const processedBranches: any = {};
-            Object.keys(branches()).forEach((e: string) => {
-                const branch = branches()[e];
-                processedBranches[e] = getSchema(branch);
+            let schema: any = joi.valid('nothing')
+            Object.keys(branches()).forEach((branchName: string) => {
+                const branch = branches()[branchName];
+
+                schema = joi.when(branch_key as string, {
+                     is: branchName,
+                     then: getObjectSchema(branch),
+                     otherwise: schema
+                })
+        
+                processedBranches[branchName] = getSchema(branch);
             });
+            if(schema) {
+                addJoiSchema(target, propertyKey, e => schema.required())
+            } else {
+                addJoiSchema(target, propertyKey, e => e.optional())
+            }
             addToPrototype(target, () => ({
                 branch_key: branch_key,
                 branches: processedBranches,
                 key: propertyKey,
                 type: "branch",
             }));
-        });
+        }
     }
 
     export function SubSchema({ schema, widget }: { schema: any; widget?: any }) {
-        return WrapValidator(<T>(target: T, propertyKey: string | symbol) => {
+        return (<T>(target: T, propertyKey: string | symbol) => {
             addToPrototype(target, () => ({
                 key: propertyKey,
                 schema: getSchema(schema),
                 widget: widget,
                 type: "subtype",
             }));
+            addJoiSchema(target, propertyKey, e => getObjectSchema(schema))
         });
     }
 }
