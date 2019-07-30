@@ -50,10 +50,11 @@ export namespace Forms {
         return false
     }
 
-    function getObjectSchema(target: any): joi.ObjectSchema | undefined {
+    function getObjectSchema(target: any):  joi.Schema {
         if(isValidatorClass(target)) {
             return target.getValidationSchema()
         }
+        return joi.optional()
     }
 
 
