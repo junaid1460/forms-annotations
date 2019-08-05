@@ -17,6 +17,8 @@
         "ordered-imports": true,
         "eofline": true,
         "semicolon": true,
-        "no-console": false
+        "no-console": false,
+        "no-namespace": false,
+        "quotemark": false
     }
 }

@@ -17,15 +17,15 @@ export namespace Forms {
     type FormData<T> = OptionalKeys<Omit<T, keyof BaseForm<any>>>
     export class BaseForm<T extends BaseForm<T>> {
 
-        static getValidationSchema(): joi.ObjectSchema  {
+        public static getValidationSchema(): joi.ObjectSchema  {
             return (this.prototype as any)[schemaSymbol]
         }
 
-        static getUISchema(): Common[]  {
+        public static getUISchema(): Common[]  {
             return getSchema(this)
         }
         
-        validate(): Promise<this> {
+        public validate(): Promise<this> {
             return new Promise((resolve, reject) => {
                const schema = ( this as any)[schemaSymbol] as joi.ObjectSchema;
                schema.validate(this, {}, (error, value) =>  {
@@ -44,6 +44,9 @@ export namespace Forms {
     }
 
     function isValidatorClass(target: any): target is typeof BaseForm {
+        if (!target) {
+            return false;
+        }
         if(target[schemaSymbol] || target.prototype && target.prototype[schemaSymbol] ) {
             return true;
         }
