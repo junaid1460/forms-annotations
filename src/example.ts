@@ -1,72 +1,70 @@
-import { Forms } from '.';
-
+import { Forms } from ".";
 
 @Forms.Form
-class ActionButton  {
-    @Forms.Input().Validate(e => e.string().required())
+class ActionButton {
+    @(Forms.Input().Validate((e) => e.string().required()))
     public action: string;
 }
 @Forms.Form
-class AnotherForm  {
-
-    @Forms.Input().Validate(e => e.string().required())
-    public label?:  string;
+class AnotherForm {
+    @(Forms.Input().Validate((e) => e.string().required()))
+    public label?: string;
 }
 
 // Customize
-const RequiredText = () => Forms.Input().Validate(e => e.string().required())
+const RequiredText = () => Forms.Input().Validate((e) => e.string().required());
 @Forms.Form
 class MyForm extends Forms.BaseForm<MyForm> {
-
     @RequiredText()
-    name?: any
+    public name?: any;
 
-    @Forms.Input({dtype: "email"})
-    @Forms.Validate(e => e.string().required())
-    email: string
+    @Forms.Input({ dtype: "email" })
+    @Forms.Validate((e) => e.string().required())
+    public email: string;
 
     @Forms.Select({
-        options: [{
-            value: "values",
-            view_value: "sdfsdf"
-        }, {
-            value: "another",
-            view_value: ""
-        }]
+        options: [
+            {
+                value: "values",
+                view_value: "sdfsdf",
+            },
+            {
+                value: "another",
+                view_value: "",
+            },
+        ],
     })
-    options?: any
+    public options?: any;
 
     @Forms.Branch<MyForm>({
         branch_key: "options",
-        branches:() => ({
+        branches: () => ({
             values: ActionButton,
-            another: AnotherForm
-        })
+            another: AnotherForm,
+        }),
     })
-    test?: any
+    public test?: any;
 
-    @Forms.SubSchema({schema: AnotherForm})
-    value: AnotherForm;
+    @Forms.SubSchema({ schema: AnotherForm })
+    public value: AnotherForm;
 }
 
-
-const data= new MyForm({
-    email: 'junaid1460@gmail.com',
+const data = new MyForm({
+    email: "junaid1460@gmail.com",
     name: "junaid",
     options: "values",
     test: {
-        label: "My label"
+        label: "My label",
     },
     value: {
-        label: "Hello world"
-    } 
-})
+        label: "Hello world",
+    },
+});
 
-console.log(data.validate().then(e => console.log(e)))
-console.log(MyForm.getValidationSchema())
-console.log(MyForm.getUISchema())
-console.log(data)
-
+console.log(data.validate().then((e) => console.log(e)));
+console.log(MyForm.getValidationSchema());
+console.log(MyForm.getUISchema());
+console.log(data);
 
 /**
 
