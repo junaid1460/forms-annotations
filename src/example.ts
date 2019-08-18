@@ -43,7 +43,7 @@ class MyForm extends Forms.BaseForm<MyForm> {
             another: AnotherForm,
         }),
     })
-    public test?: any;
+    public test?: AnotherForm | ActionButton;
 
     @Forms.SubSchema({ schema: AnotherForm })
     public value: AnotherForm;
@@ -52,9 +52,9 @@ class MyForm extends Forms.BaseForm<MyForm> {
 const data = new MyForm({
     email: "junaid1460@gmail.com",
     name: "junaid",
-    options: "values",
+    options: "another",
     test: {
-        label: "My label",
+        action: "My label",
     },
     value: {
         label: "Hello world",
@@ -65,27 +65,3 @@ console.log(data.validate().then((e) => console.log(e)));
 console.log(MyForm.getValidationSchema());
 console.log(MyForm.getUISchema());
 console.log(data);
-
-/**
-
-example.ts:65
-internals.Object {isJoi: true, _currentJoi: module.exports.internals.Any, _type: "object", _settings: null, _baseType: undefined, …}
-example.ts:66
-Array(5) [Object, Object, Object, Object, Object]
-example.ts:67
-MyForm {email: "Test", name: "he", options: "values", test: Object, value: Object}
-example.ts:68
-(node:6365) UnhandledPromiseRejectionWarning: ValidationError: child "test" fails because [child "action" fails because ["action" is required]]
-    at Object.exports.process (/Users/muhammadjunaid/loco/forms-annotations/node_modules/joi/lib/errors.js:203:19)
-    at internals.Object._validateWithOptions (/Users/muhammadjunaid/loco/forms-annotations/node_modules/joi/lib/types/any/index.js:764:31)
-    at internals.Object.validate (/Users/muhammadjunaid/loco/forms-annotations/node_modules/joi/lib/types/any/index.js:798:21)
-    at validate.Promise (/Users/muhammadjunaid/loco/forms-annotations/src/index.ts:31:23)
-    at new Promise (<anonymous>)
-    at MyForm.validate (/Users/muhammadjunaid/loco/forms-annotations/src/index.ts:29:20)
-    at Object.<anonymous> (/Users/muhammadjunaid/loco/forms-annotations/src/example.ts:65:18)
-    at Module._compile (internal/modules/cjs/loader.js:773:14)
-    at Object.Module._extensions..js (internal/modules/cjs/loader.js:787:10)
-    at Module.load (internal/modules/cjs/loader.js:653:32)
-warning.js:18
-
- */
