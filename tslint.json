@@ -19,6 +19,7 @@
         "semicolon": true,
         "no-console": false,
         "no-namespace": false,
-        "quotemark": false
+        "quotemark": false,
+        "arrow-parens":false
     }
 }
