@@ -8,7 +8,7 @@
         "sourceMap": true,
         "emitDecoratorMetadata": true,
         "strictNullChecks": true,
-
+        
         "lib": [
             "es5",
             "es2015",
