@@ -152,7 +152,7 @@ export namespace Forms {
             target: any,
             propertyKey: string | symbol,
         ) => {
-            addJoiSchema(target, propertyKey, (e) => e.optional());
+            addJoiSchema(target, propertyKey, e => e.optional());
             func(target, propertyKey);
         };
         const validatorFunc = (
@@ -217,16 +217,16 @@ export namespace Forms {
         min_length?: number;
     } & Common) {
         return <T>(target: T, propertyKey: string | symbol) => {
+            const listItem = listof();
+            const schema = getObjectSchema(listItem);
+            if (schema) {
+                addJoiSchema(target, propertyKey, e =>
+                    joi.array().items(schema),
+                );
+            } else {
+                addJoiSchema(target, propertyKey, e => joi.array());
+            }
             addToPrototype(target, () => {
-                const listItem = listof();
-                const schema = getObjectSchema(listItem);
-                if (schema) {
-                    addJoiSchema(target, propertyKey, (e) =>
-                        joi.array().items(schema),
-                    );
-                } else {
-                    addJoiSchema(target, propertyKey, (e) => joi.array());
-                }
                 return {
                     required: required,
                     key: propertyKey,
@@ -257,8 +257,8 @@ export namespace Forms {
         args: { options: Array<Options<T>> } & Common,
     ) {
         return WrapValidator(<T>(target: T, propertyKey: string | symbol) => {
-            addJoiSchema(target, propertyKey, (e) =>
-                e.valid(args.options.map((e) => e.value)),
+            addJoiSchema(target, propertyKey, e =>
+                e.valid(args.options.map(e => e.value)),
             );
             addToPrototype(target, () => ({
                 key: propertyKey,
@@ -307,7 +307,7 @@ export namespace Forms {
                 processedBranches[branchName] = getSchema(branch);
             });
             if (schema) {
-                addJoiSchema(target, propertyKey, (e) => schema.required());
+                addJoiSchema(target, propertyKey, (e) => e.required());
             } else {
                 addJoiSchema(target, propertyKey, (e) => e.optional());
             }
@@ -334,7 +334,7 @@ export namespace Forms {
                 widget: widget,
                 type: "subtype",
             }));
-            addJoiSchema(target, propertyKey, (e) => getObjectSchema(schema));
+            addJoiSchema(target, propertyKey, e => getObjectSchema(schema));
         };
     }
 }
