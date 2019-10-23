@@ -32,10 +32,10 @@ export namespace Forms {
             Object.assign(this, { ...this, ...data });
         }
 
-        public validate(): Promise<this> {
+        public validate(unknown: boolean = true): Promise<this> {
             return new Promise((resolve, reject) => {
                 const schema = (this as any)[schemaSymbol] as joi.ObjectSchema;
-                schema.validate(this, {}, (error, value) => {
+                schema.unknown(unknown).validate(this, {}, (error, value) => {
                     if (error) {
                         return reject(error);
                     }
@@ -73,7 +73,7 @@ export namespace Forms {
     export function getSchema(target: any) {
         if (isForm(target)) {
             return (target as any).prototype[formSchemSymbol].map(
-                (func: () => any) => func(),
+                (func: () => any) => func()
             );
         }
     }
@@ -110,7 +110,7 @@ export namespace Forms {
         if (isValidatorClass(target)) {
             // Create joi object schema if validators are provided
             target.prototype[schemaSymbol] = joi.object(
-                target.prototype[schemaSymbol],
+                target.prototype[schemaSymbol]
             );
             target.getValidationSchema = BaseForm.getValidationSchema;
             target.getUISchema = BaseForm.getUISchema;
@@ -119,7 +119,7 @@ export namespace Forms {
         if (isForm(target)) {
             target.prototype[getSchemaFuncSymbol] = () => {
                 return target.prototype[formSchemSymbol].map(
-                    (func: () => any) => func(),
+                    (func: () => any) => func()
                 ) as any;
             };
         } else {
@@ -132,12 +132,12 @@ export namespace Forms {
     function addJoiSchema(
         target: any,
         propertyKey: string | symbol,
-        predicate: (validator: typeof joi) => joi.Schema | undefined,
+        predicate: (validator: typeof joi) => joi.Schema | undefined
     ) {
         if (!target[schemaSymbol]) {
             Object.defineProperty(target, schemaSymbol, {
                 writable: true,
-                value: {},
+                value: {}
             });
         }
         const schema = predicate(joi);
@@ -150,13 +150,13 @@ export namespace Forms {
     function WrapValidator<T extends PropertyDecorator>(func: T) {
         const optionalValidationWrapper = (
             target: any,
-            propertyKey: string | symbol,
+            propertyKey: string | symbol
         ) => {
             addJoiSchema(target, propertyKey, e => e.optional());
             func(target, propertyKey);
         };
         const validatorFunc = (
-            predicate: (value: typeof joi) => joi.Schema,
+            predicate: (value: typeof joi) => joi.Schema
         ) => {
             return (target: any, propertyKey: string | symbol) => {
                 optionalValidationWrapper(target, propertyKey);
@@ -180,14 +180,14 @@ export namespace Forms {
             dtype?: "text" | "number" | "email";
             max_length?: number;
             min_length?: number;
-        } & Common = { dtype: "text" },
+        } & Common = { dtype: "text" }
     ) {
         return WrapValidator(<T>(target: T, propertyKey: string | symbol) => {
             addToPrototype(target, () => ({
                 key: propertyKey,
                 type: "input",
                 ...args,
-                input_type: args.dtype || "text",
+                input_type: args.dtype || "text"
             }));
         });
     }
@@ -197,7 +197,7 @@ export namespace Forms {
             addToPrototype(target, () => ({
                 key: propertyKey,
                 type: "custom",
-                widget: widget,
+                widget: widget
             }));
         });
     }
@@ -210,7 +210,7 @@ export namespace Forms {
         max_length,
         min_length,
         widget,
-        placeholder,
+        placeholder
     }: {
         listof: () => any;
         max_length?: number;
@@ -221,7 +221,7 @@ export namespace Forms {
             const schema = getObjectSchema(listItem);
             if (schema) {
                 addJoiSchema(target, propertyKey, e =>
-                    joi.array().items(schema),
+                    joi.array().items(schema)
                 );
             } else {
                 addJoiSchema(target, propertyKey, e => joi.array());
@@ -237,7 +237,7 @@ export namespace Forms {
                     max_length: max_length,
                     min_length: min_length,
                     widget: widget,
-                    placeholder: placeholder,
+                    placeholder: placeholder
                 };
             });
         };
@@ -248,36 +248,36 @@ export namespace Forms {
             addToPrototype(target, () => ({
                 key: propertyKey,
                 type: "timestamp",
-                ...args,
+                ...args
             }));
         });
     }
 
     export function Select<T = any>(
-        args: { options: Array<Options<T>> } & Common,
+        args: { options: Array<Options<T>> } & Common
     ) {
         return WrapValidator(<T>(target: T, propertyKey: string | symbol) => {
             addJoiSchema(target, propertyKey, e =>
-                e.valid(args.options.map(e => e.value)),
+                e.valid(args.options.map(e => e.value))
             );
             addToPrototype(target, () => ({
                 key: propertyKey,
                 type: "select",
-                ...args,
+                ...args
             }));
         });
     }
 
     export function File(
         args: { file_types: string[]; upload_url?: string } & Common = {
-            file_types: [],
-        },
+            file_types: []
+        }
     ) {
         return WrapValidator(<T>(target: T, propertyKey: string | symbol) => {
             addToPrototype(target, () => ({
                 key: propertyKey,
                 type: "file",
-                ...args,
+                ...args
             }));
         });
     }
@@ -287,7 +287,7 @@ export namespace Forms {
      */
     export function Branch<T>({
         branch_key,
-        branches,
+        branches
     }: {
         branch_key: keyof T;
         branches: () => { [name: string]: any };
@@ -301,28 +301,28 @@ export namespace Forms {
                 schema = joi.when(branch_key as string, {
                     is: branchName,
                     then: then,
-                    otherwise: schema,
+                    otherwise: schema
                 });
 
                 processedBranches[branchName] = getSchema(branch);
             });
             if (schema) {
-                addJoiSchema(target, propertyKey, (e) => e.required());
+                addJoiSchema(target, propertyKey, e => e.required());
             } else {
-                addJoiSchema(target, propertyKey, (e) => e.optional());
+                addJoiSchema(target, propertyKey, e => e.optional());
             }
             addToPrototype(target, () => ({
                 branch_key: branch_key,
                 branches: processedBranches,
                 key: propertyKey,
-                type: "branch",
+                type: "branch"
             }));
         };
     }
 
     export function SubSchema({
         schema,
-        widget,
+        widget
     }: {
         schema: any;
         widget?: any;
@@ -332,7 +332,7 @@ export namespace Forms {
                 key: propertyKey,
                 schema: getSchema(schema),
                 widget: widget,
-                type: "subtype",
+                type: "subtype"
             }));
             addJoiSchema(target, propertyKey, e => getObjectSchema(schema));
         };
