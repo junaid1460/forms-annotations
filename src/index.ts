@@ -32,10 +32,10 @@ export namespace Forms {
             Object.assign(this, { ...this, ...data });
         }
 
-        public validate(unknown: boolean = true): Promise<this> {
+        public validate(options: joi.ValidationOptions = {}): Promise<this> {
             return new Promise((resolve, reject) => {
                 const schema = (this as any)[schemaSymbol] as joi.ObjectSchema;
-                schema.unknown(unknown).validate(this, {}, (error, value) => {
+                schema.validate(this, options, (error, value) => {
                     if (error) {
                         return reject(error);
                     }
